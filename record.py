@@ -31,6 +31,7 @@ def on_press(key):
         json_object = {'action':'pressed_key', 'key':key.char, '_time': time.time()}
     except AttributeError:
         if key == keyboard.Key.esc:
+            print('hello')
             return False
         json_object = {'action':'pressed_key', 'key':str(key), '_time': time.time()}
     storage.append(json_object)
@@ -64,12 +65,6 @@ def on_move(x, y):
 def on_click(x, y, button, pressed):
     json_object = {'action':'pressed' if pressed else 'released', 'button':str(button), 'x':x, 'y':y, '_time':time.time()}
     storage.append(json_object)
-    if len(storage) > 1:
-        if storage[-1]['action'] == 'released' and storage[-1]['button'] == 'Button.right' and storage[-1]['_time'] - storage[-2]['_time'] > 2:
-            with open('data/{}.txt'.format(name_of_recording), 'w') as outfile:
-                json.dump(storage, outfile)
-            return False
-
 
 def on_scroll(x, y, dx, dy):
     json_object = {'action': 'scroll', 'vertical_direction': int(dy), 'horizontal_direction': int(dx), 'x':x, 'y':y, '_time': time.time()}
@@ -78,16 +73,13 @@ def on_scroll(x, y, dx, dy):
 
 # Collect events from keyboard until esc
 # Collect events from mouse until scroll
-keyboard_listener = keyboard.Listener(
-    on_press=on_press,
-    on_release=on_release)
+with keyboard.Listener(on_press=on_press, on_release=on_release) as keyboard_listener:
+    # Set up mouse listener
+    with mouse.Listener(on_click=on_click, on_scroll=on_scroll, on_move=on_move) as mouse_listener:
+        # Start listening for events
+        keyboard_listener.join()
+        mouse_listener.join()
 
-mouse_listener = mouse.Listener(
-        on_click=on_click,
-        on_scroll=on_scroll,
-        on_move=on_move)
-
-keyboard_listener.start()
-mouse_listener.start()
-keyboard_listener.join()
-mouse_listener.join()
+# Dump storage into outfile
+with open('data/{}.txt'.format(name_of_recording), 'w') as outfile:
+    json.dump(storage, outfile)
