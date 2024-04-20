@@ -21,7 +21,7 @@ if n == 3:
     name_of_recording = str(sys.argv[1])
     record_all = True
 
-print("Hold right click for more than 2 seconds (and then release) to end the recording for mouse and click 'esc' to end the recording for keyboard (both are needed to finish recording)")
+print("Press 'esc' to end recording.")
 
 storage = []
 count = 0
@@ -31,7 +31,6 @@ def on_press(key):
         json_object = {'action':'pressed_key', 'key':key.char, '_time': time.time()}
     except AttributeError:
         if key == keyboard.Key.esc:
-            print('hello')
             return False
         json_object = {'action':'pressed_key', 'key':str(key), '_time': time.time()}
     storage.append(json_object)
@@ -70,16 +69,12 @@ def on_scroll(x, y, dx, dy):
     json_object = {'action': 'scroll', 'vertical_direction': int(dy), 'horizontal_direction': int(dx), 'x':x, 'y':y, '_time': time.time()}
     storage.append(json_object)
 
-
-# Collect events from keyboard until esc
-# Collect events from mouse until scroll
+# Collect events until exit key is pressed (handled in on_press)
 with keyboard.Listener(on_press=on_press, on_release=on_release) as keyboard_listener:
-    # Set up mouse listener
     with mouse.Listener(on_click=on_click, on_scroll=on_scroll, on_move=on_move) as mouse_listener:
-        # Start listening for events
-        keyboard_listener.join()
-        mouse_listener.join()
+        keyboard_listener.join()  # pause script until keyboard listener exits
 
 # Dump storage into outfile
 with open('data/{}.txt'.format(name_of_recording), 'w') as outfile:
     json.dump(storage, outfile)
+print('Input recording stopped and saved.')
