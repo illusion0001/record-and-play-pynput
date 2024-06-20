@@ -4,6 +4,8 @@ import time
 import json
 import sys
 
+showInputs: bool = False
+
 def main():
     n = len(sys.argv)
 
@@ -72,7 +74,8 @@ def main():
             
             if action == "pressed_key" or action == "released_key":
                 key = obj['key'] if 'Key.' not in obj['key'] else special_keys[obj['key']]
-                print("action: {0}, time: {1}, key: {2}".format(action, _time, str(key)))
+                if showInputs is True:
+                    print("action: {0}, time: {1}, key: {2}".format(action, _time, str(key)))
                 if action == "pressed_key":
                     keyboard.press(key)
                 else:
@@ -84,7 +87,8 @@ def main():
                 if action == "scroll" and index > 0 and (data[index - 1]['action'] == "pressed" or data[index - 1]['action'] == "released"):
                     if x == data[index - 1]['x'] and y == data[index - 1]['y']:
                         move_for_scroll = False
-                print("x: {0}, y: {1}, action: {2}, time: {3}".format(x, y, action, _time))
+                if showInputs is True:
+                    print("x: {0}, y: {1}, action: {2}, time: {3}".format(x, y, action, _time))
                 mouse.position = (x, y)
                 if action == "pressed" or action == "released" or action == "scroll" and move_for_scroll == True:
                     time.sleep(0.1)
