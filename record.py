@@ -4,27 +4,9 @@ import time
 import json
 import sys
 
-n = len(sys.argv)
-
-if n < 2:
-    exit("Takes a compulsory argument - name of recording, and optional argument - record-all")
-
-if n > 3:
-    exit("Only takes two arguments - name of recording and (optional) record-all")
-
-if n == 2:
-    name_of_recording = str(sys.argv[1])
-    record_all = False
-if n == 3:
-    if str(sys.argv[2]) != "record-all":
-        exit("The second argument given must be 'record-all', otherwise only pass the name of recording as a parameter")
-    name_of_recording = str(sys.argv[1])
-    record_all = True
-
-print("Press 'esc' to end recording.")
-
-storage = []
-count = 0
+# Global variable
+storage: list = []
+record_all: bool = False
 
 def on_press(key):
     try:
@@ -69,12 +51,35 @@ def on_scroll(x, y, dx, dy):
     json_object = {'action': 'scroll', 'vertical_direction': int(dy), 'horizontal_direction': int(dx), 'x':x, 'y':y, '_time': time.time()}
     storage.append(json_object)
 
-# Collect events until exit key is pressed (handled in on_press)
-with keyboard.Listener(on_press=on_press, on_release=on_release) as keyboard_listener:
-    with mouse.Listener(on_click=on_click, on_scroll=on_scroll, on_move=on_move) as mouse_listener:
-        keyboard_listener.join()  # pause script until keyboard listener exits
+def main():
+    n = len(sys.argv)
 
-# Dump storage into outfile
-with open('data/{}.txt'.format(name_of_recording), 'w') as outfile:
-    json.dump(storage, outfile)
-print('Input recording stopped and saved.')
+    if n < 2:
+        exit("Takes a compulsory argument - name of recording, and optional argument - record-all")
+
+    if n > 3:
+        exit("Only takes two arguments - name of recording and (optional) record-all")
+
+    if n == 2:
+        name_of_recording = str(sys.argv[1])
+        record_all = False
+    if n == 3:
+        if str(sys.argv[2]) != "record-all":
+            exit("The second argument given must be 'record-all', otherwise only pass the name of recording as a parameter")
+        name_of_recording = str(sys.argv[1])
+        record_all = True
+
+    print("Press 'esc' to end recording.")
+
+    # Collect events until exit key is pressed (handled in on_press)
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as keyboard_listener:
+        with mouse.Listener(on_click=on_click, on_scroll=on_scroll, on_move=on_move) as mouse_listener:
+            keyboard_listener.join()  # pause script until keyboard listener exits
+
+    # Dump storage into outfile
+    with open('data/{}.json'.format(name_of_recording), 'w') as outfile:
+        json.dump(storage, outfile, indent=4)
+    print('Input recording stopped and saved.')
+
+if __name__ == "__main__":
+    main()
